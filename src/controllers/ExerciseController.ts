@@ -8,7 +8,7 @@ import { CreateExerciseDto } from '../dto/ExerciseDto';
 
 /**
  * * Method     GET
- * * Endpoint   /api/auth/exercises
+ * * Endpoint   /api/exercises
  * * Access     Private
  */
 export const getExercises = asnycHandler(
@@ -26,7 +26,7 @@ export const getExercises = asnycHandler(
 
 /**
  * * Method     POST
- * * Endpoint   /api/auth/exercises
+ * * Endpoint   /api/exercises
  * * Access     Private
  */
 export const addExercise = asnycHandler(

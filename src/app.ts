@@ -6,6 +6,8 @@ import { config } from 'dotenv';
 import connect from './config/db';
 import exerciseRouter from './routes/exercise';
 import { ErorrHandler } from './middleware/error';
+import authRouter from './routes/auth';
+import passport from 'passport';
 
 config();
 
@@ -16,12 +18,14 @@ connect(process.env.MONGO_URL as any);
 
 app.use(express.json());
 app.use(cors());
+app.use(passport.initialize());
 
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
 app.use('/api/exercises', exerciseRouter);
+app.use('/api/auth', authRouter);
 
 app.use(ErorrHandler);
 
