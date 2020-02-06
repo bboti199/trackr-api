@@ -6,8 +6,8 @@ export enum UserRoles {
 }
 
 export interface IUser extends Document {
+  fid: string;
   email: string;
-  password: string;
   username: string;
   firstName: string;
   lastName: string;

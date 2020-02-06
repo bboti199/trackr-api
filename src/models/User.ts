@@ -1,31 +1,21 @@
 import mongoose, { Schema } from 'mongoose';
 import { IUser } from '../interfaces/user';
-import { hash, compare } from 'bcryptjs';
-import { sign } from 'jsonwebtoken';
+import * as crypto from 'crypto';
 
 const UserSchema: Schema = new Schema(
   {
     email: {
       type: String,
-      required: true,
-      unique: true
-    },
-    password: {
-      type: String,
-      required: true,
-      select: false
+      required: true
     },
     username: {
       type: String,
       required: true
     },
-    firstName: {
+    fid: {
       type: String,
-      required: true
-    },
-    lastName: {
-      type: String,
-      required: true
+      required: true,
+      unique: true
     },
     role: {
       type: String,
@@ -40,34 +30,16 @@ const UserSchema: Schema = new Schema(
 );
 
 UserSchema.pre('save', async function(this: IUser, next) {
-  if (!this.isModified('password')) {
-    next();
+  if (this.avatar) {
+    return next();
   }
 
-  this.password = await hash(this.password, 10);
+  const hash = crypto
+    .createHash('md5')
+    .update(new Date().toString())
+    .digest('hex');
 
-  if (this.avatar != null) {
-    next();
-  }
-
-  this.avatar = `https://eu.ui-avatars.com/api/?name=${this.firstName}+${this.lastName}`;
+  this.avatar = `http://www.gravatar.com/avatar/${hash}?d=identicon`;
 });
-
-UserSchema.methods.checkPassword = async function(givenPass: string) {
-  return await compare(givenPass, this.password);
-};
-
-UserSchema.methods.getSignedJWT = function() {
-  return sign(
-    {
-      id: this._id,
-      role: this.role
-    },
-    process.env.JWT_SECRET as any,
-    {
-      expiresIn: process.env.JWT_EXPIRE
-    }
-  );
-};
 
 export default mongoose.model<IUser>('User', UserSchema);

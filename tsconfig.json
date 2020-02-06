@@ -7,7 +7,9 @@
     "sourceMap": true,
     "outDir": "dist",
     "strict": true,
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   },
   "lib": ["es2015"],
   "include": ["src/**/*"],
