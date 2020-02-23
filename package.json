@@ -19,6 +19,7 @@
     "express-async-handler": "^1.1.4",
     "firebase-admin": "^8.9.2",
     "ioredis": "^4.14.1",
+    "joi-objectid": "^3.0.1",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
     "mongoose": "^5.8.11",
