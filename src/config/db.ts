@@ -6,7 +6,8 @@ export default (url: string) => {
       .connect(url, {
         useUnifiedTopology: true,
         useNewUrlParser: true,
-        useCreateIndex: true
+        useCreateIndex: true,
+        useFindAndModify: false
       })
       .then(() => {
         return console.log('Connected to the database!');

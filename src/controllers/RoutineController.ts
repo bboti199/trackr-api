@@ -5,7 +5,9 @@ import { IUser } from '../interfaces/user';
 import { runValidation } from '../utils/runValidation';
 import {
   CreateRoutineSchema,
-  CreateProgressInfoSchema
+  CreateProgressInfoSchema,
+  UpdateRoutineSchema,
+  UpdateProgressInfoSchema
 } from '../validation/RoutineSchema';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import { CreateRoutineDto } from '../dto/RoutineDto';
@@ -22,12 +24,45 @@ export const getRoutines = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const routines = await Routine.find({
       owner: (req.user as IUser)._id
-    }).populate('routineData.exercise');
+    })
+      .populate('routineData.exercise', {
+        name: 1,
+        bodyPart: 1,
+        type: 1,
+        _id: 0
+      })
+      .populate('routineData.progress', { updatedAt: 0, __v: 0 });
 
     res.status(200).json({
       success: true,
       data: routines
     });
+  }
+);
+
+/**
+ * * Method     GET
+ * * Endpoint   /api/routines/:routineId
+ * * Access     Private
+ */
+export const getRoutineById = expressAsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const routine = await Routine.findOne({
+      $and: [{ _id: req.params.routineId }, { owner: (req.user as IUser)._id }]
+    })
+      .populate('routineData.exercise', {
+        name: 1,
+        bodyPart: 1,
+        type: 1,
+        _id: 0
+      })
+      .populate('routineData.progress', { updatedAt: 0, __v: 0 });
+
+    if (!routine) {
+      return next(new ErrorResponse(404, 'Routine not found'));
+    }
+
+    res.status(200).json({ success: true, data: routine });
   }
 );
 
@@ -64,6 +99,38 @@ export const createRoutine = expressAsyncHandler(
       success: true,
       data: newRoutine
     });
+  }
+);
+
+/**
+ * * Method     PATCH
+ * * Endpoint   /api/routines/:routineId
+ * * Access     Private
+ */
+export const updateRoutine = expressAsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const validationError = runValidation(UpdateRoutineSchema, req.body);
+
+    if (validationError) {
+      return next(new ErrorResponse(400, validationError));
+    }
+
+    const routine = await Routine.findOneAndUpdate(
+      {
+        $and: [
+          { _id: req.params.routineId },
+          { owner: (req.user as IUser)._id }
+        ]
+      },
+      req.body,
+      { new: true }
+    );
+
+    if (!routine) {
+      return next(new ErrorResponse(404, 'Routine not found'));
+    }
+
+    res.status(200).json({ success: true, data: routine });
   }
 );
 
@@ -130,6 +197,80 @@ export const updateProgress = expressAsyncHandler(
     res.status(200).json({
       success: true,
       data: routine
+    });
+  }
+);
+
+/**
+ * * Method     DELETE
+ * * Endpoint   /api/routines/progress/:progressInfoId
+ * * Access     Private
+ */
+export const deleteProgressData = expressAsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const progressInfo = await ProgressInfo.findById(req.params.progressInfoId);
+
+    if (!progressInfo) {
+      return next(new ErrorResponse(404, 'Progress data not found'));
+    }
+
+    const routine = await Routine.findOne({
+      $and: [{ owner: (req.user as IUser)._id }, { _id: progressInfo.routine }]
+    });
+
+    if (!routine) {
+      return next(new ErrorResponse(404, 'Corresponding routine not found'));
+    }
+
+    const dataIdx = routine.routineData.findIndex(
+      data => data.exercise.toString() === progressInfo.exercise.toString()
+    );
+
+    if (dataIdx > -1) {
+      const progressInfoIdx = routine.routineData[dataIdx].progress.findIndex(
+        info => info._id.toString() === progressInfo._id.toString()
+      );
+      routine.routineData[dataIdx].progress.splice(progressInfoIdx, 1);
+    }
+
+    await routine.save();
+
+    await progressInfo.remove();
+
+    res.status(200).json({
+      success: true
+    });
+  }
+);
+
+/**
+ * * Method     PATCH
+ * * Endpoint   /api/routines/progress/:progressInfoId
+ * * Access     Private
+ */
+export const updateProgressInfo = expressAsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const validationError = runValidation(UpdateProgressInfoSchema, req.body);
+
+    if (validationError) {
+      return next(new ErrorResponse(400, validationError));
+    }
+
+    const progressInfo = await ProgressInfo.findOneAndUpdate(
+      {
+        _id: req.params.progressInfoId
+      },
+      req.body,
+      { new: true }
+    );
+
+    if (!progressInfo) {
+      return next(new ErrorResponse(404, 'Progress data not found'));
+    }
+
+    res.status(200).json({
+      success: true,
+      data: progressInfo
     });
   }
 );

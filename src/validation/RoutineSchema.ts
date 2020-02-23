@@ -7,8 +7,7 @@ export const CreateProgressInfoSchema = Joi.object({
 });
 
 export const CreateRoutineDataSchema = Joi.object({
-  exercise: Joi.string().required(),
-  progress: Joi.array().items(CreateProgressInfoSchema)
+  exercise: Joi.string().required()
 });
 
 export const CreateRoutineSchema = Joi.object({
@@ -19,4 +18,17 @@ export const CreateRoutineSchema = Joi.object({
   routineData: Joi.array()
     .items(CreateRoutineDataSchema)
     .required()
+});
+
+export const UpdateRoutineSchema = Joi.object({
+  name: Joi.string()
+    .max(255)
+    .optional(),
+  description: Joi.string().optional()
+});
+
+export const UpdateProgressInfoSchema = Joi.object({
+  weight: Joi.number().optional(),
+  sets: Joi.number().optional(),
+  reps: Joi.number().optional()
 });
