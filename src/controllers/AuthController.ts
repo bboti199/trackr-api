@@ -1,4 +1,3 @@
-import asnycHandler from 'express-async-handler';
 import { Request, Response, NextFunction } from 'express';
 import { runValidation } from '../utils/runValidation';
 import { RegisterUserSchema } from '../validation/UserSchema';
@@ -7,13 +6,14 @@ import { CreateUserDto } from '../dto/UserDto';
 import User from '../models/User';
 import { firebaseApp } from '../firebase/firebase';
 import { IUser } from '../interfaces/user';
+import expressAsyncHandler from 'express-async-handler';
 
 /**
  * * Method     POST
  * * Endpoint   /api/auth/register
  * * Access     Public
  */
-export const register = asnycHandler(
+export const register = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const validationError = runValidation(RegisterUserSchema, req.body);
 
@@ -51,7 +51,7 @@ export const register = asnycHandler(
   }
 );
 
-export const getUserData = asnycHandler(
+export const getUserData = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = await User.findOne({ fid: (req.user as IUser).fid });
 

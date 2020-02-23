@@ -1,19 +1,22 @@
-import asnycHandler from 'express-async-handler';
 import { Request, Response, NextFunction } from 'express';
 import Exercise from '../models/Exercise';
 import { runValidation } from '../utils/runValidation';
-import { CreateExerciseSchema } from '../validation/ExerciseSchema';
+import {
+  CreateExerciseSchema,
+  UpdateExerciseSchema
+} from '../validation/ExerciseSchema';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import { CreateExerciseDto } from '../dto/ExerciseDto';
 import { IUser, UserRoles } from '../interfaces/user';
 import { groupBy } from 'lodash';
+import expressAsyncHandler from 'express-async-handler';
 
 /**
  * * Method     GET
  * * Endpoint   /api/exercises
  * * Access     Private
  */
-export const getExercises = asnycHandler(
+export const getExercises = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const exercises = await Exercise.find({
       $or: [{ owner: null }, { owner: (req.user as IUser)._id }]
@@ -33,7 +36,7 @@ export const getExercises = asnycHandler(
  * * Endpoint   /api/exercises
  * * Access     Private
  */
-export const addExercise = asnycHandler(
+export const addExercise = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const validationError = runValidation(CreateExerciseSchema, req.body);
 
@@ -59,7 +62,7 @@ export const addExercise = asnycHandler(
  * * Endpoint   /api/exercises/grouped
  * * Access     Private
  */
-export const getExercisesGrouped = asnycHandler(
+export const getExercisesGrouped = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const exercises = await Exercise.find({
       $or: [{ owner: null }, { owner: (req.user as IUser)._id }]
@@ -79,11 +82,57 @@ export const getExercisesGrouped = asnycHandler(
 );
 
 /**
+ * * Method     GET
+ * * Endpoint   /api/exercises/compound
+ * * Access     Private
+ */
+export const getCompoundExercises = expressAsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const exercises = await Exercise.find({
+      $and: [
+        { type: 'compound' },
+        { $or: [{ owner: null }, { owner: (req.user as IUser)._id }] }
+      ]
+    });
+
+    res.status(200).json({
+      source: 'api',
+      success: true,
+      count: exercises.length,
+      data: exercises
+    });
+  }
+);
+
+/**
+ * * Method     GET
+ * * Endpoint   /api/exercises/isolation
+ * * Access     Private
+ */
+export const getIsolationExercises = expressAsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const exercises = await Exercise.find({
+      $and: [
+        { type: 'isolation' },
+        { $or: [{ owner: null }, { owner: (req.user as IUser)._id }] }
+      ]
+    });
+
+    res.status(200).json({
+      source: 'api',
+      success: true,
+      count: exercises.length,
+      data: exercises
+    });
+  }
+);
+
+/**
  * * Method     DELETE
  * * Endpoint   /api/exercises/:id
  * * Access     Private
  */
-export const deleteExercise = asnycHandler(
+export const deleteExercise = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     if ((req.user as IUser).role === UserRoles.admin) {
       const exercise = await Exercise.findByIdAndRemove(req.params.id);
@@ -101,5 +150,30 @@ export const deleteExercise = asnycHandler(
     await exercise.remove();
 
     res.status(200).json({ success: true, data: exercise });
+  }
+);
+
+/**
+ * * Method     PATCH
+ * * Endpoint   /api/exercises/:id
+ * * Access     Private
+ */
+export const updateExercise = expressAsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const validationError = runValidation(UpdateExerciseSchema, req.body);
+
+    if (validationError) {
+      return next(new ErrorResponse(400, validationError));
+    }
+
+    const updateExerciseDto: CreateExerciseDto = req.body;
+
+    const exercise = await Exercise.findOneAndUpdate(
+      { $and: [{ _id: req.params.id }, { owner: (req.user as IUser)._id }] },
+      updateExerciseDto,
+      { new: true }
+    );
+
+    return res.status(200).json({ success: true, data: exercise });
   }
 );

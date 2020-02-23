@@ -8,6 +8,7 @@ import exerciseRouter from './routes/exercise';
 import { ErorrHandler } from './middleware/error';
 import authRouter from './routes/auth';
 import passport from 'passport';
+import routineRouter from './routes/routine';
 
 config();
 
@@ -26,6 +27,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use('/api/exercises', exerciseRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/routines', routineRouter);
 
 app.use(ErorrHandler);
 

@@ -7,3 +7,9 @@ export const CreateExerciseSchema = Joi.object({
     .required()
     .valid('compound', 'isolation')
 });
+
+export const UpdateExerciseSchema = Joi.object({
+  name: Joi.string(),
+  bodyPart: Joi.string(),
+  type: Joi.string().valid('compound', 'isolation')
+});
