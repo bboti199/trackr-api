@@ -17,5 +17,5 @@ const params = {
 
 export const firebaseApp = initializeApp({
   credential: credential.cert(params),
-  databaseURL: 'https://authservice-6186d.firebaseio.com'
+  databaseURL: process.env.FIREBASE_DB_URL
 });
