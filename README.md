@@ -9,4 +9,6 @@ To function properly it needs the following modifications:
   - `JWT_SECRET`: secret key
   - `JWT_EXPIRE`
   - `FIREBASE_DB_URL`: your firebase db url
+  - `REDIS_HOST`
+  - `REDIS_PORT`
 - `serviceAccountKey.json`: in the firebase folder
