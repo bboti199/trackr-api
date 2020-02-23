@@ -5,6 +5,7 @@ import { IUser } from '../interfaces/user';
 import { runValidation } from '../utils/runValidation';
 import { CreateLogSchema, UpdateLogSchema } from '../validation/LogSchema';
 import { ErrorResponse } from '../utils/ErrorResponse';
+import { RedisClient } from '../RedisClient';
 
 /**
  * * Method     GET
@@ -13,13 +14,30 @@ import { ErrorResponse } from '../utils/ErrorResponse';
  */
 export const getLogs = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
+    const userKey = `logs_${(req.user as IUser).id}`;
+    let cachedLogs = await RedisClient.get(userKey);
+
+    if (cachedLogs) {
+      cachedLogs = JSON.parse(cachedLogs);
+      return res.status(200).json({
+        source: 'cache',
+        success: true,
+        count: cachedLogs?.length,
+        data: cachedLogs
+      });
+    }
+
     const logs = await WorkoutLog.find({
       user: (req.user as IUser)._id
     })
       .populate('workout', { _id: 1, name: 1, description: 1 })
       .populate('user', { fid: 1, username: 1, email: 1, avatar: 1 });
 
-    res.status(200).json({ success: true, data: logs });
+    await RedisClient.setex(userKey, 1800, JSON.stringify(logs));
+
+    res
+      .status(200)
+      .json({ source: 'api', success: true, count: logs.length, data: logs });
   }
 );
 
@@ -77,6 +95,8 @@ export const addLog = expressAsyncHandler(
 
     await workoutLog.save();
 
+    await RedisClient.del(`logs_${(req.user as IUser).id}`);
+
     res.status(200).json({ success: true, data: workoutLog });
   }
 );
@@ -95,6 +115,8 @@ export const deleteLog = expressAsyncHandler(
     if (!workoutLog) {
       return next(new ErrorResponse(404, 'Log not found'));
     }
+
+    await RedisClient.del(`logs_${(req.user as IUser).id}`);
 
     res.status(200).json({ success: true });
   }
@@ -124,6 +146,8 @@ export const updateLog = expressAsyncHandler(
     if (!workoutLog) {
       return next(new ErrorResponse(404, 'Log not found'));
     }
+
+    await RedisClient.del(`logs_${(req.user as IUser).id}`);
 
     res.status(200).json({ success: true, data: workoutLog });
   }

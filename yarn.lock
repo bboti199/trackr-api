@@ -325,10 +325,10 @@
   resolved "https://registry.yarnpkg.com/@types/hapi__joi/-/hapi__joi-16.0.9.tgz#0ad11f9de3753748444ac16249a264fc7c798ab4"
   integrity sha512-FV+rJxm4UBxBsRvT5hpiRvnxbpi9iJu4qdwXQvNXf6eXJkcgKGlTwHnstIDAxSTKTUMSmpJnyXpr6XI9X/4SjA==
 
-"@types/ioredis@^4.14.6":
-  version "4.14.6"
-  resolved "https://registry.yarnpkg.com/@types/ioredis/-/ioredis-4.14.6.tgz#446403ab0360bf12d010ba8bbd0670b292f12143"
-  integrity sha512-VUbEZaeCfdiqfd3UDtmPpwewCBdbnjpMZtarKuZV7XwkhqgBZN208WQpsD3hT0BJqEx3GPApFnIVnIOq/eBpbA==
+"@types/ioredis@^4.14.7":
+  version "4.14.7"
+  resolved "https://registry.yarnpkg.com/@types/ioredis/-/ioredis-4.14.7.tgz#a11d1b2102042efd61fb4e96e04299d2c29d0334"
+  integrity sha512-PC0myxSTUm4m97YfD3Cn2s+7gajoUdM3Xh8JuULK7kftJOx7s3LfWWDPPVYAI96ADt+epQuu/qMa9yecIOL94A==
   dependencies:
     "@types/node" "*"
 
@@ -1418,10 +1418,10 @@ ini@^1.3.4, ini@~1.3.0:
   resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.5.tgz#eee25f56db1c9ec6085e0c22778083f596abf927"
   integrity sha512-RZY5huIKCMRWDUqZlEi72f/lmXKMvuszcMBduliQ3nnWbx9X/ZBQO7DijMEYS9EhHBb2qacRUMtC7svLwe0lcw==
 
-ioredis@^4.14.1:
-  version "4.14.1"
-  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-4.14.1.tgz#b73ded95fcf220f106d33125a92ef6213aa31318"
-  integrity sha512-94W+X//GHM+1GJvDk6JPc+8qlM7Dul+9K+lg3/aHixPN7ZGkW6qlvX0DG6At9hWtH2v3B32myfZqWoANUJYGJA==
+ioredis@^4.16.0:
+  version "4.16.0"
+  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-4.16.0.tgz#44d51288e20da14e5b6f687b2db0312e69106556"
+  integrity sha512-tlalhtuvnxXJNtrPjec1nGicuOCpi9ErYV/fRfwaWSzktX9ESrzHlcFwj1pVAL326E8dmt7h9pPQZyyVPPksRA==
   dependencies:
     cluster-key-slot "^1.1.0"
     debug "^4.1.1"

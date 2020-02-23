@@ -7,7 +7,6 @@ import connect from './config/db';
 import exerciseRouter from './routes/exercise';
 import { ErorrHandler } from './middleware/error';
 import authRouter from './routes/auth';
-import passport from 'passport';
 import routineRouter from './routes/routine';
 import logRouter from './routes/logs';
 
@@ -20,7 +19,6 @@ connect(process.env.MONGO_URL as any);
 
 app.use(express.json());
 app.use(cors());
-app.use(passport.initialize());
 
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));

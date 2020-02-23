@@ -10,6 +10,7 @@ import { CreateExerciseDto } from '../dto/ExerciseDto';
 import { IUser, UserRoles } from '../interfaces/user';
 import { groupBy } from 'lodash';
 import expressAsyncHandler from 'express-async-handler';
+import { RedisClient } from '../RedisClient';
 
 /**
  * * Method     GET
@@ -18,9 +19,24 @@ import expressAsyncHandler from 'express-async-handler';
  */
 export const getExercises = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
+    const userKey = `exercises_${(req.user as IUser).id}`;
+    let cachedExercises = await RedisClient.get(userKey);
+
+    if (cachedExercises) {
+      cachedExercises = JSON.parse(cachedExercises);
+      return res.status(200).json({
+        source: 'cache',
+        success: true,
+        count: cachedExercises?.length,
+        data: cachedExercises
+      });
+    }
+
     const exercises = await Exercise.find({
       $or: [{ owner: null }, { owner: (req.user as IUser)._id }]
     });
+
+    await RedisClient.setex(userKey, 1800, JSON.stringify(exercises));
 
     res.status(200).json({
       source: 'api',
@@ -53,6 +69,8 @@ export const addExercise = expressAsyncHandler(
 
     await exercise.save();
 
+    await RedisClient.del(`exercises_${(req.user as IUser).id}`);
+
     res.status(201).json({ success: true, data: exercise });
   }
 );
@@ -64,16 +82,27 @@ export const addExercise = expressAsyncHandler(
  */
 export const getExercisesGrouped = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const exercises = await Exercise.find({
-      $or: [{ owner: null }, { owner: (req.user as IUser)._id }]
-    });
+    const userKey = `exercises_${(req.user as IUser).id}`;
+    let cachedExercises = await RedisClient.get(userKey);
+    let exercises = [];
+    let source = '';
+
+    if (cachedExercises) {
+      exercises = JSON.parse(cachedExercises);
+      source = 'cache';
+    } else {
+      exercises = await Exercise.find({
+        $or: [{ owner: null }, { owner: (req.user as IUser)._id }]
+      });
+      source = 'api';
+    }
 
     const data = groupBy(exercises, exercise => {
       return exercise.bodyPart;
     });
 
     res.status(200).json({
-      source: 'api',
+      source,
       success: true,
       count: exercises.length,
       data
@@ -88,15 +117,26 @@ export const getExercisesGrouped = expressAsyncHandler(
  */
 export const getCompoundExercises = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const exercises = await Exercise.find({
-      $and: [
-        { type: 'compound' },
-        { $or: [{ owner: null }, { owner: (req.user as IUser)._id }] }
-      ]
-    });
+    const userKey = `exercises_${(req.user as IUser).id}`;
+    let cachedExercises = await RedisClient.get(userKey);
+    let exercises = [];
+    let source = '';
+
+    if (cachedExercises) {
+      exercises = JSON.parse(cachedExercises);
+      source = 'cache';
+    } else {
+      exercises = await Exercise.find({
+        $and: [
+          { type: 'compound' },
+          { $or: [{ owner: null }, { owner: (req.user as IUser)._id }] }
+        ]
+      });
+      source = 'api';
+    }
 
     res.status(200).json({
-      source: 'api',
+      source,
       success: true,
       count: exercises.length,
       data: exercises
@@ -111,12 +151,23 @@ export const getCompoundExercises = expressAsyncHandler(
  */
 export const getIsolationExercises = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const exercises = await Exercise.find({
-      $and: [
-        { type: 'isolation' },
-        { $or: [{ owner: null }, { owner: (req.user as IUser)._id }] }
-      ]
-    });
+    const userKey = `exercises_${(req.user as IUser).id}`;
+    let cachedExercises = await RedisClient.get(userKey);
+    let exercises = [];
+    let source = '';
+
+    if (cachedExercises) {
+      exercises = JSON.parse(cachedExercises);
+      source = 'cache';
+    } else {
+      exercises = await Exercise.find({
+        $and: [
+          { type: 'isolation' },
+          { $or: [{ owner: null }, { owner: (req.user as IUser)._id }] }
+        ]
+      });
+      source = 'api';
+    }
 
     res.status(200).json({
       source: 'api',
@@ -149,6 +200,8 @@ export const deleteExercise = expressAsyncHandler(
 
     await exercise.remove();
 
+    await RedisClient.del(`exercises_${(req.user as IUser).id}`);
+
     res.status(200).json({ success: true, data: exercise });
   }
 );
@@ -173,6 +226,8 @@ export const updateExercise = expressAsyncHandler(
       updateExerciseDto,
       { new: true }
     );
+
+    await RedisClient.del(`exercises_${(req.user as IUser).id}`);
 
     return res.status(200).json({ success: true, data: exercise });
   }

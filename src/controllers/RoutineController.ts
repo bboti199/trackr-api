@@ -14,6 +14,7 @@ import { CreateRoutineDto } from '../dto/RoutineDto';
 import { checkIfExists } from '../utils/CheckIfExists';
 import Exercise from '../models/Exercise';
 import ProgressInfo from '../models/ProgressInfo';
+import { RedisClient } from '../RedisClient';
 
 /**
  * * Method     GET
@@ -22,6 +23,19 @@ import ProgressInfo from '../models/ProgressInfo';
  */
 export const getRoutines = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
+    const userKey = `routines_${(req.user as IUser).id}`;
+    let cachedRoutines = await RedisClient.get(userKey);
+
+    if (cachedRoutines) {
+      cachedRoutines = JSON.parse(cachedRoutines);
+      return res.status(200).json({
+        source: 'cache',
+        success: true,
+        count: cachedRoutines?.length,
+        data: cachedRoutines
+      });
+    }
+
     const routines = await Routine.find({
       owner: (req.user as IUser)._id
     })
@@ -33,8 +47,12 @@ export const getRoutines = expressAsyncHandler(
       })
       .populate('routineData.progress', { updatedAt: 0, __v: 0 });
 
+    await RedisClient.setex(userKey, 1800, JSON.stringify(routines));
+
     res.status(200).json({
+      source: 'api',
       success: true,
+      count: routines.length,
       data: routines
     });
   }
@@ -95,6 +113,8 @@ export const createRoutine = expressAsyncHandler(
 
     await newRoutine.save();
 
+    await RedisClient.del(`routines_${(req.user as IUser).id}`);
+
     res.status(201).json({
       success: true,
       data: newRoutine
@@ -130,6 +150,8 @@ export const updateRoutine = expressAsyncHandler(
       return next(new ErrorResponse(404, 'Routine not found'));
     }
 
+    await RedisClient.del(`routines_${(req.user as IUser).id}`);
+
     res.status(200).json({ success: true, data: routine });
   }
 );
@@ -150,6 +172,8 @@ export const deleteRoutine = expressAsyncHandler(
     } else {
       return next(new ErrorResponse(404, 'Routine not found!'));
     }
+
+    await RedisClient.del(`routines_${(req.user as IUser).id}`);
 
     res.status(200).json({
       success: true
@@ -194,6 +218,8 @@ export const updateProgress = expressAsyncHandler(
 
     await routine.save();
 
+    await RedisClient.del(`routines_${(req.user as IUser).id}`);
+
     res.status(200).json({
       success: true,
       data: routine
@@ -237,6 +263,8 @@ export const deleteProgressData = expressAsyncHandler(
 
     await progressInfo.remove();
 
+    await RedisClient.del(`routines_${(req.user as IUser).id}`);
+
     res.status(200).json({
       success: true
     });
@@ -267,6 +295,8 @@ export const updateProgressInfo = expressAsyncHandler(
     if (!progressInfo) {
       return next(new ErrorResponse(404, 'Progress data not found'));
     }
+
+    await RedisClient.del(`routines_${(req.user as IUser).id}`);
 
     res.status(200).json({
       success: true,
