@@ -5,9 +5,10 @@
   "license": "MIT",
   "scripts": {
     "build": "rm -rf dist && tsc",
-    "start": "ts-node src/app.ts",
+    "start": "node dist/app.js",
     "dev": "DEBUG=ioredis:* nodemon src/app.ts",
-    "dev:debug": "nodemon --inspect src/app.ts"
+    "dev:debug": "nodemon --inspect src/app.ts",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "@hapi/joi": "^17.1.0",
