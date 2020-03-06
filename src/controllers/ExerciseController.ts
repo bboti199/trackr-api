@@ -20,7 +20,7 @@ export const getExercises = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const exercises = await Exercise.find({
       $or: [{ owner: null }, { owner: (req.user as IUser)._id }]
-    });
+    }).sort({createdAt: -1});
 
     res.status(200).json({
       source: 'api',

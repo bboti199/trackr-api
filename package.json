@@ -10,10 +10,7 @@
     "dev:debug": "nodemon --inspect src/app.ts",
     "postinstall": "npm run build"
   },
-  "engines": {
-    "node": "13.7.0"
-  },
-  "dependencies": {
+ "dependencies": {
     "@hapi/joi": "^17.1.0",
     "bcryptjs": "^2.4.3",
     "colors": "^1.4.0",

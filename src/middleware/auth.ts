@@ -27,6 +27,7 @@ export const protect = asyncHander(
       // Decode & verify firebase token
       const decoded = await firebaseApp.auth().verifyIdToken(token);
 
+
       // Find firebase user
       const userData = await firebaseApp.auth().getUser(decoded.uid);
 
