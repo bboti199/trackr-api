@@ -21,9 +21,9 @@ const RoutineSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-RoutineSchema.pre('remove', function(next) {
+/*RoutineSchema.pre('remove', function(next) {
   ProgressInfo.remove({ routine: this._id }).exec();
   next();
-});
+});*/
 
 export default mongoose.model<IRoutine>('Routine', RoutineSchema);

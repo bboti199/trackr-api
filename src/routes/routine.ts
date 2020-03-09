@@ -6,9 +6,9 @@ import {
   updateProgress,
   deleteRoutine,
   updateRoutine,
-  getRoutineById,
-  deleteProgressData,
-  updateProgressInfo
+  getRoutineById
+  // deleteProgressData,
+  // updateProgressInfo
 } from '../controllers/RoutineController';
 
 const routineRouter = Router();
@@ -19,8 +19,8 @@ routineRouter.post('/', protect, createRoutine);
 routineRouter.delete('/:routineId', protect, deleteRoutine);
 routineRouter.patch('/:routineId', protect, updateRoutine);
 
-routineRouter.post('/:routineId/:exerciseId/progress', protect, updateProgress);
-routineRouter.delete('/progress/:progressInfoId', protect, deleteProgressData);
-routineRouter.patch('/progress/:progressInfoId', protect, updateProgressInfo);
+routineRouter.post('/:routineId/progress', protect, updateProgress);
+// routineRouter.delete('/progress/:progressInfoId', protect, deleteProgressData);
+// routineRouter.patch('/progress/:progressInfoId', protect, updateProgressInfo);
 
 export default routineRouter;

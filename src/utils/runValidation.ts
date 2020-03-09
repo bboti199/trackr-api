@@ -1,7 +1,7 @@
 import Joi = require('@hapi/joi');
 
 export const runValidation = (
-  schema: Joi.ObjectSchema,
+  schema: Joi.ObjectSchema | Joi.ArraySchema,
   data: any
 ): string | null => {
   const { error } = schema.validate(data, { abortEarly: false });

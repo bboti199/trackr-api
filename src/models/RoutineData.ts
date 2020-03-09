@@ -1,4 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
+import ProgressInfoSchema from './ProgressInfo';
 
 const RoutineDataSchema: Schema = new Schema({
   exercise: {
@@ -6,7 +7,7 @@ const RoutineDataSchema: Schema = new Schema({
     ref: 'Exercise',
     required: true
   },
-  progress: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ProgressInfo' }]
+  progress: [ProgressInfoSchema]
 });
 
 export default RoutineDataSchema;

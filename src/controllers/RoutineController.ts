@@ -5,15 +5,18 @@ import { IUser } from '../interfaces/user';
 import { runValidation } from '../utils/runValidation';
 import {
   CreateRoutineSchema,
-  CreateProgressInfoSchema,
   UpdateRoutineSchema,
-  UpdateProgressInfoSchema
+  UpdateRoutineDataSchema
 } from '../validation/RoutineSchema';
 import { ErrorResponse } from '../utils/ErrorResponse';
-import { CreateRoutineDto } from '../dto/RoutineDto';
+import {
+  CreateRoutineDto,
+  UpdateRoutineProgressDtoItem
+} from '../dto/RoutineDto';
 import { checkIfExists } from '../utils/CheckIfExists';
 import Exercise from '../models/Exercise';
-import ProgressInfo from '../models/ProgressInfo';
+import ProgressInfoSchema from '../models/ProgressInfo';
+import { IProgressInfo } from '../interfaces/progressInfo';
 
 /**
  * * Method     GET
@@ -24,14 +27,12 @@ export const getRoutines = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const routines = await Routine.find({
       owner: (req.user as IUser)._id
-    })
-      .populate('routineData.exercise', {
-        name: 1,
-        bodyPart: 1,
-        type: 1,
-        _id: 0
-      })
-      .populate('routineData.progress', { updatedAt: 0, __v: 0 });
+    }).populate('routineData.exercise', {
+      name: 1,
+      bodyPart: 1,
+      type: 1,
+      _id: 1
+    });
 
     res.status(200).json({
       success: true,
@@ -50,14 +51,12 @@ export const getRoutineById = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const routine = await Routine.findOne({
       $and: [{ _id: req.params.routineId }, { owner: (req.user as IUser)._id }]
-    })
-      .populate('routineData.exercise', {
-        name: 1,
-        bodyPart: 1,
-        type: 1,
-        _id: 0
-      })
-      .populate('routineData.progress', { updatedAt: 0, __v: 0 });
+    }).populate('routineData.exercise', {
+      name: 1,
+      bodyPart: 1,
+      type: 1,
+      _id: 1
+    });
 
     if (!routine) {
       return next(new ErrorResponse(404, 'Routine not found'));
@@ -88,6 +87,8 @@ export const createRoutine = expressAsyncHandler(
     if (!exercisesOk) {
       return next(new ErrorResponse(400, 'Invalid exercise found'));
     }
+
+    console.log(JSON.stringify(routineDto, null, 2));
 
     const newRoutine = new Routine({
       ...routineDto,
@@ -160,12 +161,12 @@ export const deleteRoutine = expressAsyncHandler(
 
 /**
  * * Method     POST
- * * Endpoint   /api/routines/:routineId/:exerciseId/progress
+ * * Endpoint   /api/routines/:routineId/progress
  * * Access     Private
  */
 export const updateProgress = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const validationError = runValidation(CreateProgressInfoSchema, req.body);
+    const validationError = runValidation(UpdateRoutineDataSchema, req.body);
 
     if (validationError) {
       return next(new ErrorResponse(400, validationError));
@@ -179,18 +180,17 @@ export const updateProgress = expressAsyncHandler(
       return next(new ErrorResponse(404, 'Routine not found'));
     }
 
-    const progressInfo = new ProgressInfo({
-      ...req.body,
-      exercise: req.params.exerciseId,
-      routine: req.params.routineId
-    });
+    const progressData: [UpdateRoutineProgressDtoItem] = req.body;
 
-    await progressInfo.save();
-
-    routine.routineData.map(data => {
-      if (data.exercise.toString() === req.params.exerciseId) {
-        data.progress.push(progressInfo);
-      }
+    progressData.map(progressDataItem => {
+      routine.routineData.map(routineDataItem => {
+        if (
+          progressDataItem.exercise.toString() ===
+          routineDataItem.exercise.toString()
+        ) {
+          routineDataItem.progress.unshift(progressDataItem.progress as any);
+        }
+      });
     });
 
     await routine.save();
@@ -207,7 +207,7 @@ export const updateProgress = expressAsyncHandler(
  * * Endpoint   /api/routines/progress/:progressInfoId
  * * Access     Private
  */
-export const deleteProgressData = expressAsyncHandler(
+/*export const deleteProgressData = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const progressInfo = await ProgressInfo.findById(req.params.progressInfoId);
 
@@ -242,14 +242,14 @@ export const deleteProgressData = expressAsyncHandler(
       success: true
     });
   }
-);
+);*/
 
 /**
  * * Method     PATCH
  * * Endpoint   /api/routines/progress/:progressInfoId
  * * Access     Private
  */
-export const updateProgressInfo = expressAsyncHandler(
+/*export const updateProgressInfo = expressAsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const validationError = runValidation(UpdateProgressInfoSchema, req.body);
 
@@ -274,4 +274,4 @@ export const updateProgressInfo = expressAsyncHandler(
       data: progressInfo
     });
   }
-);
+);*/
