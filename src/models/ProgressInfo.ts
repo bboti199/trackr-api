@@ -3,14 +3,14 @@ import mongoose, { Schema } from 'mongoose';
 const ProgressInfoSchema: Schema = new Schema(
   {
     weight: {
-      type: Number
+      type: [Number]
     },
     sets: {
       type: Number,
       required: true
     },
     reps: {
-      type: Number,
+      type: [Number],
       required: true
     }
   },

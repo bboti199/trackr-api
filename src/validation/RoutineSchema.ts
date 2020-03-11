@@ -1,15 +1,23 @@
 import * as Joi from '@hapi/joi';
 
 export const CreateProgressInfoSchema = Joi.object({
-  weight: Joi.number().required(),
+  weight: Joi.array()
+    .items(Joi.number())
+    .required(),
   sets: Joi.number().required(),
-  reps: Joi.number().required()
+  reps: Joi.array()
+    .items(Joi.number())
+    .required()
 });
 
 export const CreateInitialProgressInfoSchema = Joi.object({
+  reps: Joi.array()
+    .items(Joi.number())
+    .required(),
   sets: Joi.number().required(),
-  reps: Joi.number().required(),
-  weight: Joi.number().optional()
+  weight: Joi.array()
+    .items(Joi.number())
+    .optional()
 });
 
 export const CreateRoutineDataSchema = Joi.object({

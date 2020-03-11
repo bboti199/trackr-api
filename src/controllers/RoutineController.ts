@@ -15,8 +15,6 @@ import {
 } from '../dto/RoutineDto';
 import { checkIfExists } from '../utils/CheckIfExists';
 import Exercise from '../models/Exercise';
-import ProgressInfoSchema from '../models/ProgressInfo';
-import { IProgressInfo } from '../interfaces/progressInfo';
 
 /**
  * * Method     GET

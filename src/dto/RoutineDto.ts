@@ -1,7 +1,7 @@
 export class CreateProgressInfoDto {
-  weight?: number;
+  weight?: [number];
   sets: number;
-  reps: number;
+  reps: [number];
   date?: Date;
 }
 
@@ -17,9 +17,9 @@ export class CreateRoutineDto {
 }
 
 export class UpdateProgressInfoDto {
-  weight: number;
+  weight: [number];
   sets: number;
-  reps: number;
+  reps: [number];
 }
 
 export class UpdateRoutineProgressDtoItem {
