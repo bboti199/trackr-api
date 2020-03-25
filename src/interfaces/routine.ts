@@ -7,3 +7,10 @@ export interface IRoutine extends Document {
   owner: string;
   routineData: [IRoutineData];
 }
+
+export enum TimePeriodInfo {
+  WEEK = 'week',
+  MONTH = 'month',
+  YEAR = 'year',
+  ALL = 'all'
+}

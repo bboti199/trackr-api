@@ -10,7 +10,7 @@
     "dev:debug": "nodemon --inspect src/app.ts",
     "postinstall": "npm run build"
   },
- "dependencies": {
+  "dependencies": {
     "@hapi/joi": "^17.1.0",
     "bcryptjs": "^2.4.3",
     "colors": "^1.4.0",
@@ -22,6 +22,7 @@
     "joi-objectid": "^3.0.1",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
+    "moment": "^2.24.0",
     "mongoose": "^5.8.11",
     "morgan": "^1.9.1",
     "passport": "^0.4.1",

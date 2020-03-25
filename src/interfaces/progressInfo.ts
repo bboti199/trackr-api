@@ -4,4 +4,5 @@ export interface IProgressInfo extends Document {
   weight: number;
   sets: number;
   reps: number;
+  createdAt: Date;
 }

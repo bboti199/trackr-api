@@ -6,7 +6,8 @@ import {
   updateProgress,
   deleteRoutine,
   updateRoutine,
-  getRoutineById
+  getRoutineById,
+  getChartDataForRoutine
   // deleteProgressData,
   // updateProgressInfo
 } from '../controllers/RoutineController';
@@ -19,6 +20,11 @@ routineRouter.post('/', protect, createRoutine);
 routineRouter.delete('/:routineId', protect, deleteRoutine);
 routineRouter.patch('/:routineId', protect, updateRoutine);
 
+routineRouter.get(
+  '/:routineId/progress/chart/:timePeriod',
+  protect,
+  getChartDataForRoutine
+);
 routineRouter.post('/:routineId/progress', protect, updateProgress);
 // routineRouter.delete('/progress/:progressInfoId', protect, deleteProgressData);
 // routineRouter.patch('/progress/:progressInfoId', protect, updateProgressInfo);

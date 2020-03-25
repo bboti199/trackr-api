@@ -6,7 +6,8 @@ import { runValidation } from '../utils/runValidation';
 import {
   CreateRoutineSchema,
   UpdateRoutineSchema,
-  UpdateRoutineDataSchema
+  UpdateRoutineDataSchema,
+  GetProgressInfoSchema
 } from '../validation/RoutineSchema';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import {
@@ -15,6 +16,8 @@ import {
 } from '../dto/RoutineDto';
 import { checkIfExists } from '../utils/CheckIfExists';
 import Exercise from '../models/Exercise';
+import moment from 'moment';
+import { extractChartData } from '../utils/ExtractChartData';
 
 /**
  * * Method     GET
@@ -61,6 +64,47 @@ export const getRoutineById = expressAsyncHandler(
     }
 
     res.status(200).json({ success: true, data: routine });
+  }
+);
+
+/**
+ * * Method     GET
+ * * Endpoint   /api/routines/:routineId/progress/chart/:timePeriod
+ * * Params     { week, month, year, all, default: month }
+ * * Access     Private
+ */
+export const getChartDataForRoutine = expressAsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const validationError = runValidation(GetProgressInfoSchema, req.params);
+
+    if (validationError) {
+      return next(new ErrorResponse(400, validationError));
+    }
+
+    const routine = await Routine.findOne({
+      $and: [{ _id: req.params.routineId }, { owner: (req.user as IUser)._id }]
+    }).populate('routineData.exercise', {
+      name: 1,
+      bodyPart: 1,
+      type: 1,
+      _id: 1
+    });
+
+    if (!routine) {
+      return next(new ErrorResponse(404, 'Routine not found'));
+    }
+
+    let timePeriodDate;
+
+    if (req.params.timePeriod === 'all') {
+      timePeriodDate = moment(new Date(0));
+    } else {
+      timePeriodDate = moment().subtract(1, req.params.timePeriod as any);
+    }
+
+    const data = extractChartData(routine, timePeriodDate);
+
+    res.status(200).json({ success: true, data });
   }
 );
 

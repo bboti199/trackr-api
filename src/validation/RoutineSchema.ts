@@ -1,4 +1,13 @@
 import * as Joi from '@hapi/joi';
+const JoiObjectId = require('joi-objectid');
+const myObjectId = JoiObjectId(Joi);
+
+export const GetProgressInfoSchema = Joi.object({
+  timePeriod: Joi.string()
+    .required()
+    .valid('week', 'month', 'year', 'all'),
+  routineId: myObjectId().required()
+});
 
 export const CreateProgressInfoSchema = Joi.object({
   weight: Joi.array()
